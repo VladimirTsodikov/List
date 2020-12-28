@@ -74,7 +74,7 @@ TEST(List, constructor_with_parameter_is_available_and_correct)
 	EXPECT_EQ(14, b.begin()->data);
 }
 
-TEST(List, can_insert_in_first_position_correctly)
+TEST(List, can_insert_in_first_position_index_correctly)
 {
 	List<> a; a.insert(2);		//случай, когда изначально список пуст
 	List<> b(12); b.insert(2);	//случай, когда в нём есть элементы
@@ -84,7 +84,7 @@ TEST(List, can_insert_in_first_position_correctly)
 
 }
 
-TEST(List, can_insert_in_last_position_correctly)
+TEST(List, can_insert_in_last_position_by_index_correctly)
 {
 	List<>a(23); a.insert(24); a.insert(25); a.insert(26);	//4 элемента в списке
 	a.insert(27, 5);		//вставляем на максимально возможную, пятую позицию
@@ -96,7 +96,7 @@ TEST(List, can_insert_in_last_position_correctly)
 
 }
 
-TEST(List, can_insert_in_middle_position_correctly)
+TEST(List, can_insert_in_middle_position_by_index_correctly)
 {
 	List<>a(23); a.insert(24); a.insert(25); a.insert(26); //4 элемента в списке
 	a.insert(9, 3);
@@ -107,10 +107,18 @@ TEST(List, can_insert_in_middle_position_correctly)
 	EXPECT_EQ(9, it->data);
 }
 
-TEST(List, throw_then_incorrect_position_insert)
+TEST(List, throw_then_incorrect_position_insert_by_index)
 {
 	List<>a(23);
 	ASSERT_ANY_THROW(a.insert(7, 3));	//т.к. вставлять тут можно только на 1 или 2 позиции
+}
+
+TEST(List, can_insert_by_pointer)
+{
+	List<> a(23);
+	List<>::iterator it(a.end());		//итератор указывает на голову!
+	ASSERT_NO_THROW(a.insert(5, *it));	//Поэтому вставка будет на первую позицию - сразу после головы, - потому что список циклический
+	EXPECT_EQ(5, a.begin()->data);
 }
 
 TEST(List, can_erase_element_by_index)
@@ -125,6 +133,21 @@ TEST(List, throw_then_incorrect_position_erase)
 {
 	List<> a(-3);
 	ASSERT_ANY_THROW(a.erase(5));
+}
+
+TEST(List, can_erase_element_by_pointer)
+{
+	List<>a(11);
+	a.insert(12, 2);
+	ASSERT_NO_THROW(a.erase(*a.end()));	//так как список циклический, то должны передавать указатель на голову (то есть на конец), если нужно удалить первый элемент	
+	EXPECT_EQ(12, a.begin()->data);
+	EXPECT_EQ(1, a.GetCount());
+}
+
+TEST(List, throw_then_pointer_for_erase_to_last_element)
+{
+	List<> a(-3); 
+	ASSERT_ANY_THROW(a.erase(*a.begin()));	//то есть когда хотим удалить следующий за последним элемент, то есть голову
 }
 
 TEST(List, can_search_element_by_value_correctly)

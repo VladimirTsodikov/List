@@ -7,11 +7,10 @@ class List
 {
 protected:
 	//реализуем внутреннюю структуру ЗВЕНО
-	template <class ValType = int>
 	struct Node
 	{
 		ValType data;
-		Node<ValType>* next;
+		Node* next;
 
 		Node() { data = 0; next = NULL;  }	//поле next переопределяется в конструкторе списка и при создании новых звеньев в списке
 		Node(ValType tmp) { data = tmp; next = NULL; }
@@ -22,10 +21,10 @@ public:
 	class iterator
 	{
 	private:
-		Node<ValType>* current;	//текущий
+		Node* current;	//текущий
 	public:
 		iterator() { current = NULL; }
-		iterator(Node<ValType>* tmp) : current(tmp) {}
+		iterator(Node* tmp) : current(tmp) {}
 		iterator(const iterator& iter) { current = iter.current; }
 
 		iterator& operator =(const iterator& other)
@@ -41,12 +40,12 @@ public:
 			return *this;
 		}
 
-		Node<ValType>*& operator *()
+		Node*& operator *()
 		{
 			return current;
 		}
 
-		Node<ValType>* operator ->()
+		Node* operator ->()
 		{
 			return current;
 		}
@@ -63,27 +62,27 @@ public:
 	};
 
 protected:
-	Node<ValType>* head;
+	Node* head;
 	int count;
 
 public:
 	List()	//конструктор по умолчанию
 	{
-		head = new Node<ValType>();	//только создаём голову
+		head = new Node();	//только создаём голову
 		head->next = head;
 		count = 0;
 	}
 	List(ValType tmp)		//конструктор с параметром
 	{
-		head = new Node<ValType>();				//создали голову
-		head->next = new Node<ValType>(tmp);	//и затем элемент через конструктор звена с параметром
+		head = new Node();				//создали голову
+		head->next = new Node(tmp);	//и затем элемент через конструктор звена с параметром
 		head->next->next = head;
 		count = 1;
 	}
 	~List()
 	{
 		//или через итератор - пример далее, функция clear
-		Node<ValType> *p = head->next, *tmp;
+		Node *p = head->next, *tmp;
 		while (p != head)
 		{
 			tmp = p->next;
@@ -97,22 +96,24 @@ public:
 	iterator begin() { iterator tmp(head->next); return tmp; }
 	iterator end() { iterator tmp(head); return tmp; }
 
-	void insert(ValType, int position=1);		//вставка элемента типа ValType на определённую позицию, если она существует в списке или является следующей после конца списка
-	void erase (int);	//удаление некоторого звена
+	void insert(const ValType& DataTmp, int position=1);		//вставка элемента типа ValType на определённую позицию за O(n), если она существует в списке или является следующей после конца списка
+	void insert(const ValType& DataTmp, Node* position);	//вставка элемента после некоторого элемента, на который получили указатель, за O(1)
+	void erase (int position);	//удаление некоторого звена с заданной позицией за O(n)
+	void erase(Node* position);	//удаление звена после некоторого звена, на который получили указатель, за O(1)
 	void Print();		//распечатка массива
 	bool search(ValType);		//проверка наличия элемента (хотя бы одного) в списке
-	bool empty() { return (head->next == head); }	//проверка на пустоту
+	bool empty() { return (head->next == head); }	//проверка на пустоту		//или return (count==0)
 	ValType front();	//возвращает первое значение в списке (сразу за головой)
 	void clear();	//очистка списка (останется только голова)
 	int GetCount() { return count; }	//возвращает количество элементов (звеньев) в списке
 };
 
 template <class ValType>		//вставка элемента типа ValType на определённую позицию, если она существует в списке или является следующей после конца списка
-void List<ValType>::insert(ValType DataTmp, int position=1)
+void List<ValType>::insert(const ValType& DataTmp, int position=1)
 {
 	if (position == 1)
 	{
-		Node<ValType>* tmp = new Node<ValType>(DataTmp);
+		Node* tmp = new Node(DataTmp);
 		tmp->next = head->next;
 		head->next = tmp;
 		count++;
@@ -126,7 +127,7 @@ void List<ValType>::insert(ValType DataTmp, int position=1)
 			++it;
 			i++;
 		}
-		Node<ValType>* tmp = new Node<ValType>(DataTmp);
+		Node* tmp = new Node(DataTmp);
 		tmp->next = it->next;
 		it->next = tmp;
 		count++;
@@ -135,11 +136,20 @@ void List<ValType>::insert(ValType DataTmp, int position=1)
 }
 
 template <class ValType>
+void List<ValType>::insert(const ValType& DataTmp, Node* position)
+{
+	Node* tmp = new Node(DataTmp);
+	tmp->next = position->next;
+	position->next = tmp;
+	count++;
+}
+
+template <class ValType>
 void List<ValType>::erase(int position)
 {
 	if (position == 1)
 	{
-		Node<ValType>* tmp = head->next;
+		Node* tmp = head->next;
 		head->next = tmp->next;
 		delete tmp;
 		count--;
@@ -153,12 +163,25 @@ void List<ValType>::erase(int position)
 			++it;
 			i++;
 		}
-		Node<ValType>* tmp = it->next;
+		Node* tmp = it->next;
 		it->next = tmp->next;
 		delete tmp;
 		count--;
 	}
 	else throw "Incorrect position";
+}
+
+template <class ValType>
+void List<ValType>::erase(Node* position)
+{
+	if (position->next != head)
+	{
+		Node* tmp = position->next;
+		position->next = tmp->next;
+		delete tmp;
+		count--;
+	}
+	else throw "Pointer to last Node";
 }
 
 template <class ValType>
