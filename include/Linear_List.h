@@ -95,6 +95,11 @@ public:
 	//функции для удобной работы с циклами
 	iterator begin() { iterator tmp(head->next); return tmp; }
 	iterator end() { iterator tmp(head); return tmp; }
+	/*iterator end() { 
+		iterator tmp(head);
+		while (tmp->next != head) ++tmp;
+		return tmp;
+	}*/
 
 	void insert(const ValType& DataTmp, int position=1);		//вставка элемента типа ValType на определённую позицию за O(n), если она существует в списке или является следующей после конца списка
 	void insert(const ValType& DataTmp, Node* position);	//вставка элемента после некоторого элемента, на который получили указатель, за O(1)
@@ -135,6 +140,7 @@ void List<ValType>::insert(const ValType& DataTmp, int position=1)
 	else throw "Incorrect position";
 }
 
+//вставка нового звена списка будет производиться ПОСЛЕ звена position
 template <class ValType>
 void List<ValType>::insert(const ValType& DataTmp, Node* position)
 {
@@ -217,7 +223,7 @@ template <class ValType>
 ValType List<ValType>::front()
 {
 	if (!empty())
-		return (head->next->data);	//у следуюзего за головой звена возвращаем поле data
+		return (head->next->data);	//у следующего за головой звена возвращаем поле data
 	else throw "List is empty";
 }
 
